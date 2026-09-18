@@ -35,7 +35,7 @@ const fallbackProjects = [
 ];
 
 const els = Object.fromEntries([
-  'liveState','loginBtn','logoutBtn','overallProgress','overallBar','projectCount','ideaCount','devCount','testCount','liveCount','holdCount',
+  'liveState','loginBtn','logoutBtn','overallProgress','overallBar','projectCount','statusSummary',
   'categoryFilter','statusFilter','sortFilter','searchInput','projectGrid','lastSync','notice','loginDialog','loginForm',
   'loginEmail','loginPassword','loginMessage','editDialog','editForm','editId','editTitle','editProgress','editStatus',
   'editPriority','editOwner','editCurrent','editNext','editMessage','editCancel'
@@ -102,11 +102,20 @@ function renderSummary() {
   els.overallProgress.textContent = `${projects.length ? overall : 0}%`;
   els.overallBar.style.width = `${projects.length ? overall : 0}%`;
   els.projectCount.textContent = projects.length;
-  els.ideaCount.textContent = projects.filter(p=>p.status==='構想').length;
-  els.devCount.textContent = projects.filter(p=>p.status==='開発中').length;
-  els.testCount.textContent = projects.filter(p=>p.status==='検証中').length;
-  els.liveCount.textContent = projects.filter(p=>p.status==='運用中').length;
-  els.holdCount.textContent = projects.filter(p=>p.status==='保留').length;
+
+  const preferredStatuses = ['構想','開発中','検証中','運用中','保留'];
+  const actualStatuses = [...new Set(projects.map(p => p.status).filter(Boolean))];
+  const statuses = [
+    ...preferredStatuses.filter(status => actualStatuses.includes(status) || status === '保留'),
+    ...actualStatuses.filter(status => !preferredStatuses.includes(status))
+  ];
+  els.statusSummary.innerHTML = statuses.map(status => {
+    const count = projects.filter(p => p.status === status).length;
+    return `<article class="summary-card status-card" data-status="${escapeHtml(status)}">
+      <span class="summary-label">${escapeHtml(status)}</span>
+      <strong>${count}</strong>
+    </article>`;
+  }).join('');
 }
 function renderProjects() {
   renderSummary();
