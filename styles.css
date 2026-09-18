@@ -33,7 +33,7 @@ button { cursor:pointer; }
 .button.primary { background:var(--blue); color:#fff; }
 .button.secondary { background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.28); color:inherit; }
 .modal-card .button.secondary { background:#f4f7fb; color:var(--text); border-color:var(--line); }
-.summary-grid { display:grid; grid-template-columns:2fr repeat(4,1fr); gap:12px; margin:18px 0; }
+.summary-grid { display:grid; grid-template-columns:2fr repeat(6,1fr); gap:12px; margin:18px 0; }
 .summary-card { min-height:112px; background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px 20px; box-shadow:0 5px 15px rgba(32,71,117,.04); display:flex; flex-direction:column; justify-content:center; }
 .summary-card.primary { background:linear-gradient(135deg,#0b5eb9,#128af3); color:#fff; border-color:transparent; }
 .summary-label { color:var(--muted); font-size:.8rem; font-weight:800; letter-spacing:.05em; }
@@ -87,8 +87,12 @@ button { cursor:pointer; }
 .form-grid .full { grid-column:1/-1; }
 .form-message { margin:0; min-height:1.3em; color:#c32f45; font-size:.84rem; font-weight:700; }
 .empty { grid-column:1/-1; padding:44px; text-align:center; background:#fff; border:1px dashed #cbd8e6; border-radius:18px; color:var(--muted); }
+@media (max-width:1200px) {
+  .summary-grid { grid-template-columns:repeat(3,1fr); }
+  .summary-card.primary { grid-column:1/-1; }
+}
 @media (max-width:980px) {
-  .summary-grid { grid-template-columns:repeat(4,1fr); }
+  .summary-grid { grid-template-columns:repeat(3,1fr); }
   .summary-card.primary { grid-column:1/-1; }
   .project-grid { grid-template-columns:1fr; }
   .toolbar { grid-template-columns:repeat(3,1fr); }
