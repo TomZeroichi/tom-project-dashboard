@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#08275e" />
+  <meta name="description" content="TOM PROJECTS - 開発中ツールの進捗をリアルタイムで共有するダッシュボード" />
+  <title>TOM Project Dashboard</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">TOM PROJECTS</p>
+        <h1>Project Dashboard</h1>
+        <p class="hero-copy">開発中ツールの進捗・現在作業・次のステップをリアルタイム共有</p>
+      </div>
+      <div class="hero-actions">
+        <span id="liveState" class="live-pill">● 接続準備中</span>
+        <button id="loginBtn" class="button secondary" type="button">管理者ログイン</button>
+        <button id="logoutBtn" class="button secondary hidden" type="button">ログアウト</button>
+      </div>
+    </header>
+
+    <section class="summary-grid" aria-label="進捗サマリー">
+      <article class="summary-card primary">
+        <span class="summary-label">総合進捗</span>
+        <strong id="overallProgress">0%</strong>
+        <div class="progress-track"><span id="overallBar" style="width:0%"></span></div>
+      </article>
+      <article class="summary-card"><span class="summary-label">全プロジェクト</span><strong id="projectCount">0</strong></article>
+      <article class="summary-card"><span class="summary-label">開発中</span><strong id="devCount">0</strong></article>
+      <article class="summary-card"><span class="summary-label">検証中</span><strong id="testCount">0</strong></article>
+      <article class="summary-card"><span class="summary-label">運用中</span><strong id="liveCount">0</strong></article>
+    </section>
+
+    <section class="toolbar" aria-label="表示フィルター">
+      <label>カテゴリ
+        <select id="categoryFilter"><option value="all">すべて</option></select>
+      </label>
+      <label>状態
+        <select id="statusFilter">
+          <option value="all">すべて</option>
+          <option>構想</option><option>開発中</option><option>検証中</option><option>運用中</option><option>保留</option>
+        </select>
+      </label>
+      <label>並び順
+        <select id="sortFilter">
+          <option value="order">登録順</option>
+          <option value="progress_desc">進捗が高い順</option>
+          <option value="updated_desc">更新が新しい順</option>
+          <option value="priority">優先度順</option>
+        </select>
+      </label>
+      <label class="search-field">検索
+        <input id="searchInput" type="search" placeholder="ツール名・作業内容" autocomplete="off" />
+      </label>
+    </section>
+
+    <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
+    <main id="projectGrid" class="project-grid" aria-live="polite"></main>
+
+    <footer class="footer">
+      <span>SMALL TOOLS. BIG CHANGES.</span>
+      <span id="lastSync">最終同期: --</span>
+    </footer>
+  </div>
+
+  <dialog id="loginDialog" class="modal">
+    <form id="loginForm" method="dialog" class="modal-card">
+      <div class="modal-head"><h2>管理者ログイン</h2><button class="icon-btn" value="cancel" aria-label="閉じる">×</button></div>
+      <label>メールアドレス<input id="loginEmail" type="email" required autocomplete="email" /></label>
+      <label>パスワード<input id="loginPassword" type="password" required autocomplete="current-password" /></label>
+      <p id="loginMessage" class="form-message"></p>
+      <div class="modal-actions"><button class="button primary" type="submit">ログイン</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="editDialog" class="modal">
+    <form id="editForm" method="dialog" class="modal-card wide">
+      <div class="modal-head"><h2 id="editTitle">プロジェクト編集</h2><button class="icon-btn" value="cancel" aria-label="閉じる">×</button></div>
+      <input id="editId" type="hidden" />
+      <div class="form-grid">
+        <label>進捗率<input id="editProgress" type="number" min="0" max="100" step="1" required /></label>
+        <label>状態<select id="editStatus"><option>構想</option><option>開発中</option><option>検証中</option><option>運用中</option><option>保留</option></select></label>
+        <label>優先度<select id="editPriority"><option>高</option><option>中</option><option>低</option></select></label>
+        <label>担当者<input id="editOwner" type="text" maxlength="40" /></label>
+        <label class="full">現在の作業<textarea id="editCurrent" rows="5" placeholder="1行ごとに1項目"></textarea></label>
+        <label class="full">次の作業<textarea id="editNext" rows="5" placeholder="1行ごとに1項目"></textarea></label>
+      </div>
+      <p id="editMessage" class="form-message"></p>
+      <div class="modal-actions"><button class="button secondary" type="button" id="editCancel">キャンセル</button><button class="button primary" type="submit">保存</button></div>
+    </form>
+  </dialog>
+
+  <script src="./config.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
