@@ -1,0 +1,17 @@
+-- TOM Project Dashboard
+-- Live Supabase project is already provisioned and configured.
+-- Project ref: xhbcnvaarluteyhgstey
+--
+-- Do not run this file against the live database.
+-- It is intentionally kept as a marker so deployment packages clearly show
+-- that the database setup is managed separately from GitHub Pages.
+--
+-- To add the first admin after creating the Auth user, run only this pattern
+-- with the actual login email:
+--
+-- insert into public.project_members(user_id, display_name, role, active)
+-- select id, 'Ryu', 'admin', true
+-- from auth.users
+-- where email = 'YOUR_EMAIL@example.com'
+-- on conflict (user_id)
+-- do update set role='admin', active=true;
