@@ -4,9 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#08275e" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="description" content="TOM PROJECTS - 開発中ツールの進捗をリアルタイムで共有するダッシュボード" />
   <title>TOM Project Dashboard</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=0.1.2" />
 </head>
 <body>
   <div class="app-shell">
@@ -30,11 +33,7 @@
         <div class="progress-track"><span id="overallBar" style="width:0%"></span></div>
       </article>
       <article class="summary-card"><span class="summary-label">全プロジェクト</span><strong id="projectCount">0</strong></article>
-      <article class="summary-card"><span class="summary-label">構想</span><strong id="ideaCount">0</strong></article>
-      <article class="summary-card"><span class="summary-label">開発中</span><strong id="devCount">0</strong></article>
-      <article class="summary-card"><span class="summary-label">検証中</span><strong id="testCount">0</strong></article>
-      <article class="summary-card"><span class="summary-label">運用中</span><strong id="liveCount">0</strong></article>
-      <article class="summary-card"><span class="summary-label">保留</span><strong id="holdCount">0</strong></article>
+      <div id="statusSummary" class="status-summary"></div>
     </section>
 
     <section class="toolbar" aria-label="表示フィルター">
@@ -96,7 +95,7 @@
     </form>
   </dialog>
 
-  <script src="./config.js"></script>
-  <script type="module" src="./app.js"></script>
+  <script src="./config.js?v=0.1.2"></script>
+  <script type="module" src="./app.js?v=0.1.2"></script>
 </body>
 </html>
