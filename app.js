@@ -35,8 +35,8 @@ const fallbackProjects = [
 ];
 
 const els = Object.fromEntries([
-  'liveState','loginBtn','logoutBtn','overallProgress','overallBar','projectCount','statusSummary',
-  'categoryFilter','statusFilter','sortFilter','searchInput','projectGrid','lastSync','notice','loginDialog','loginForm',
+  'liveState','loginBtn','logoutBtn','overallProgress','overallBar','projectCount','stale3Count','stale7Count','statusSummary',
+  'categoryFilter','statusFilter','updateFilter','sortFilter','searchInput','projectGrid','lastSync','notice','loginDialog','loginForm',
   'loginEmail','loginPassword','loginMessage','editDialog','editForm','editId','editTitle','editProgress','editStatus',
   'editPriority','editOwner','editCurrent','editNext','editMessage','editCancel'
 ].map(id => [id, document.getElementById(id)]));
@@ -60,6 +60,36 @@ function formatDate(value) {
   if (Number.isNaN(d.getTime())) return '--';
   return new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(d);
 }
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function daysSince(value) {
+  if (!value) return Number.POSITIVE_INFINITY;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return Number.POSITIVE_INFINITY;
+  return Math.max(0, Math.floor((Date.now() - d.getTime()) / DAY_MS));
+}
+
+function getFreshness(project) {
+  const days = daysSince(project.updated_at);
+  if (!Number.isFinite(days)) return { days, state:'stale', label:'更新日不明' };
+  if (days <= 2) return { days, state:'fresh', label:days === 0 ? '今日更新' : `${days}日前更新` };
+  if (days < 7) return { days, state:'aging', label:`${days}日更新なし` };
+  return { days, state:'stale', label:`${days}日以上更新なし` };
+}
+
+function getProgressDelta(project) {
+  const progress = Number(project.progress) || 0;
+  const previous = Number.isFinite(Number(project.previous_progress)) ? Number(project.previous_progress) : progress;
+  return progress - previous;
+}
+
+function deltaMeta(project) {
+  const delta = getProgressDelta(project);
+  if (delta > 0) return { delta, state:'up', arrow:'↑', text:`+${delta}pt` };
+  if (delta < 0) return { delta, state:'down', arrow:'↓', text:`${delta}pt` };
+  return { delta:0, state:'flat', arrow:'→', text:'±0pt' };
+}
+
 function showNotice(message, type='info') {
   els.notice.textContent = message;
   els.notice.classList.remove('hidden');
@@ -78,10 +108,15 @@ function populateCategories() {
 function getFilteredProjects() {
   const cat = els.categoryFilter.value;
   const status = els.statusFilter.value;
+  const update = els.updateFilter.value;
   const q = els.searchInput.value.trim().toLowerCase();
   let list = projects.filter(p => {
     if (cat !== 'all' && p.category !== cat) return false;
     if (status !== 'all' && p.status !== status) return false;
+    const freshness = getFreshness(p);
+    if (update === 'recent' && freshness.days > 2) return false;
+    if (update === '3plus' && freshness.days < 3) return false;
+    if (update === '7plus' && freshness.days < 7) return false;
     if (q) {
       const hay = [p.name,p.subtitle,p.category,p.status,p.owner_name,...safeArray(p.current_work),...safeArray(p.next_work)].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
@@ -89,8 +124,10 @@ function getFilteredProjects() {
     return true;
   });
   switch (els.sortFilter.value) {
+    case 'delta_desc': list.sort((a,b)=>getProgressDelta(b)-getProgressDelta(a) || new Date(b.updated_at||0)-new Date(a.updated_at||0)); break;
     case 'progress_desc': list.sort((a,b)=>(b.progress||0)-(a.progress||0)); break;
     case 'updated_desc': list.sort((a,b)=>new Date(b.updated_at||0)-new Date(a.updated_at||0)); break;
+    case 'updated_asc': list.sort((a,b)=>new Date(a.updated_at||0)-new Date(b.updated_at||0)); break;
     case 'priority': list.sort((a,b)=>(PRIORITY_SCORE[b.priority]||0)-(PRIORITY_SCORE[a.priority]||0) || (a.sort_order||0)-(b.sort_order||0)); break;
     default: list.sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
   }
@@ -102,6 +139,12 @@ function renderSummary() {
   els.overallProgress.textContent = `${projects.length ? overall : 0}%`;
   els.overallBar.style.width = `${projects.length ? overall : 0}%`;
   els.projectCount.textContent = projects.length;
+  const stale3 = projects.filter(p => getFreshness(p).days >= 3).length;
+  const stale7 = projects.filter(p => getFreshness(p).days >= 7).length;
+  els.stale3Count.textContent = stale3;
+  els.stale7Count.textContent = stale7;
+  els.stale3Count.closest('.summary-card')?.classList.toggle('active-warning', stale3 > 0);
+  els.stale7Count.closest('.summary-card')?.classList.toggle('active-critical', stale7 > 0);
 
   const preferredStatuses = ['構想','開発中','検証中','運用中','保留'];
   const actualStatuses = [...new Set(projects.map(p => p.status).filter(Boolean))];
@@ -130,19 +173,21 @@ function renderProjects() {
     const current = safeArray(p.current_work);
     const next = safeArray(p.next_work);
     const progress = Math.max(0,Math.min(100,Number(p.progress)||0));
-    return `<article class="project-card" style="--category-color:${color}">
+    const delta = deltaMeta(p);
+    const freshness = getFreshness(p);
+    return `<article class="project-card freshness-${freshness.state}" style="--category-color:${color}">
       <div class="project-number">${Number(p.sort_order)||''}</div>
       <div class="project-main">
         <div class="project-top">
           <div><h2 class="project-title">${escapeHtml(p.name)}</h2><p class="project-subtitle">${escapeHtml(p.subtitle||'')}</p></div>
           <div class="badges"><span class="badge category">${escapeHtml(p.category||'その他')}</span><span class="badge status-${escapeHtml(p.status||'開発中')}">${escapeHtml(p.status||'開発中')}</span><span class="badge">優先度 ${escapeHtml(p.priority||'中')}</span></div>
         </div>
-        <div class="progress-row"><strong class="progress-value">${progress}%</strong><div class="progress-mini" aria-label="進捗 ${progress}%"><span style="width:${progress}%"></span></div><span class="owner">担当: ${escapeHtml(p.owner_name||'未設定')}</span></div>
+        <div class="progress-row"><div class="progress-metric"><strong class="progress-value">${progress}%</strong><span class="delta-badge delta-${delta.state}">${delta.arrow} 前回比 ${delta.text}</span></div><div class="progress-mini" aria-label="進捗 ${progress}%"><span style="width:${progress}%"></span></div><span class="owner">担当: ${escapeHtml(p.owner_name||'未設定')}</span></div>
         <div class="work-grid">
           <section class="work-box"><h3>現在の作業</h3><ul>${current.map(v=>`<li>${escapeHtml(v)}</li>`).join('') || '<li>未登録</li>'}</ul></section>
           <section class="work-box"><h3>次の作業</h3><ul>${next.map(v=>`<li>${escapeHtml(v)}</li>`).join('') || '<li>未登録</li>'}</ul></section>
         </div>
-        <div class="card-footer"><span>最終更新 ${formatDate(p.updated_at)}</span>${canEdit ? `<button type="button" class="edit-btn" data-edit-id="${p.id}">編集</button>` : ''}</div>
+        <div class="card-footer"><div class="footer-meta"><span class="freshness-badge freshness-${freshness.state}">● ${freshness.label}</span><span>最終更新 ${formatDate(p.updated_at)}</span></div>${canEdit ? `<button type="button" class="edit-btn" data-edit-id="${p.id}">編集</button>` : ''}</div>
       </div>
     </article>`;
   }).join('');
@@ -247,7 +292,7 @@ els.editForm.addEventListener('submit',async e=>{
   if (error) { els.editMessage.textContent=error.message; return; }
   els.editDialog.close();
 });
-['categoryFilter','statusFilter','sortFilter'].forEach(k=>els[k].addEventListener('change',renderProjects));
+['categoryFilter','statusFilter','updateFilter','sortFilter'].forEach(k=>els[k].addEventListener('change',renderProjects));
 els.searchInput.addEventListener('input',renderProjects);
 
 if (supabase) {
