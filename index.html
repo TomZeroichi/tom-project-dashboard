@@ -9,7 +9,7 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="description" content="TOM PROJECTS - 開発中ツールの進捗をリアルタイムで共有するダッシュボード" />
   <title>TOM Project Dashboard</title>
-  <link rel="stylesheet" href="./styles.css?v=0.1.2" />
+  <link rel="stylesheet" href="./styles.css?v=0.2.0" />
 </head>
 <body>
   <div class="app-shell">
@@ -33,6 +33,8 @@
         <div class="progress-track"><span id="overallBar" style="width:0%"></span></div>
       </article>
       <article class="summary-card"><span class="summary-label">全プロジェクト</span><strong id="projectCount">0</strong></article>
+      <article class="summary-card activity-summary"><span class="summary-label">3日以上未更新</span><strong id="stale3Count">0</strong></article>
+      <article class="summary-card activity-summary critical"><span class="summary-label">7日以上未更新</span><strong id="stale7Count">0</strong></article>
       <div id="statusSummary" class="status-summary"></div>
     </section>
 
@@ -46,11 +48,21 @@
           <option>構想</option><option>開発中</option><option>検証中</option><option>運用中</option><option>保留</option>
         </select>
       </label>
+      <label>更新状況
+        <select id="updateFilter">
+          <option value="all">すべて</option>
+          <option value="recent">2日以内</option>
+          <option value="3plus">3日以上更新なし</option>
+          <option value="7plus">7日以上更新なし</option>
+        </select>
+      </label>
       <label>並び順
         <select id="sortFilter">
           <option value="order">登録順</option>
+          <option value="delta_desc">前回比が大きい順</option>
           <option value="progress_desc">進捗が高い順</option>
           <option value="updated_desc">更新が新しい順</option>
+          <option value="updated_asc">更新が古い順</option>
           <option value="priority">優先度順</option>
         </select>
       </label>
@@ -95,7 +107,7 @@
     </form>
   </dialog>
 
-  <script src="./config.js?v=0.1.2"></script>
-  <script type="module" src="./app.js?v=0.1.2"></script>
+  <script src="./config.js?v=0.2.0"></script>
+  <script type="module" src="./app.js?v=0.2.0"></script>
 </body>
 </html>
