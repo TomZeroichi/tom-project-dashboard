@@ -9,7 +9,7 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="description" content="TOM PROJECTS - 開発中ツールの進捗をリアルタイムで共有するダッシュボード" />
   <title>TOM Project Dashboard</title>
-  <link rel="stylesheet" href="./styles.css?v=0.2.0" />
+  <link rel="stylesheet" href="./styles.css?v=0.2.1" />
 </head>
 <body>
   <div class="app-shell">
@@ -99,6 +99,9 @@
         <label>状態<select id="editStatus"><option>構想</option><option>開発中</option><option>検証中</option><option>運用中</option><option>保留</option></select></label>
         <label>優先度<select id="editPriority"><option>高</option><option>中</option><option>低</option></select></label>
         <label>担当者<input id="editOwner" type="text" maxlength="40" /></label>
+        <label class="full">公開URL<input id="editProjectUrl" type="url" inputmode="url" placeholder="https://..." /></label>
+        <label class="full">管理画面URL<input id="editAdminUrl" type="url" inputmode="url" placeholder="https://..." /></label>
+        <label class="full">使用サービス<textarea id="editServices" rows="3" placeholder="GitHub | https://github.com/...&#10;Supabase&#10;Railway | https://..."></textarea></label>
         <label class="full">現在の作業<textarea id="editCurrent" rows="5" placeholder="1行ごとに1項目"></textarea></label>
         <label class="full">次の作業<textarea id="editNext" rows="5" placeholder="1行ごとに1項目"></textarea></label>
       </div>
@@ -107,7 +110,7 @@
     </form>
   </dialog>
 
-  <script src="./config.js?v=0.2.0"></script>
-  <script type="module" src="./app.js?v=0.2.0"></script>
+  <script src="./config.js?v=0.2.1"></script>
+  <script type="module" src="./app.js?v=0.2.1"></script>
 </body>
 </html>
