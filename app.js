@@ -155,11 +155,6 @@ function getFilteredProjects() {
     if (cat !== 'all' && p.category !== cat) return false;
     if (status !== 'all' && p.status !== status) return false;
     const freshness = getFreshness(p);
-    const projectKey = Number(p.project_no || p.sort_order || p.id);
-    const logoData = PROJECT_LOGOS[projectKey] || '';
-    const numberMarkup = logoData
-      ? `<div class="project-number project-logo-wrap"><img class="project-logo" src="${logoData}" alt="${escapeHtml(p.name)}のロゴ" /></div>`
-      : `<div class="project-number">${Number(p.sort_order)||''}</div>`;
     if (update === 'recent' && freshness.days > 2) return false;
     if (update === '3plus' && freshness.days < 3) return false;
     if (update === '7plus' && freshness.days < 7) return false;
@@ -221,6 +216,11 @@ function renderProjects() {
     const progress = Math.max(0,Math.min(100,Number(p.progress)||0));
     const delta = deltaMeta(p);
     const freshness = getFreshness(p);
+    const projectKey = Number(p.project_no || p.sort_order || p.id);
+    const logoData = PROJECT_LOGOS[projectKey] || '';
+    const numberMarkup = logoData
+      ? `<div class="project-number project-logo-wrap"><img class="project-logo" src="${logoData}" alt="${escapeHtml(p.name)}のロゴ" /></div>`
+      : `<div class="project-number">${Number(p.sort_order)||''}</div>`;
     const projectUrl = safeProjectUrl(p.project_url);
     const adminUrl = safeProjectUrl(p.admin_url);
     const services = serviceLinks(p.external_services);
