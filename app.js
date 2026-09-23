@@ -61,6 +61,12 @@ function serviceLogo(name='') {
   const known = { 'github':'github', 'supabase':'supabase', 'railway':'railway', 'netlify':'netlify', 'firebase':'firebase', 'square':'square', 'ebay':'ebay', 'chrome':'googlechrome', 'google drive':'googledrive' };
   return known[String(name).trim().toLowerCase()] || '';
 }
+function serviceShortName(name='') {
+  const key = String(name).trim().toLowerCase();
+  const known = { 'github':'GH', 'supabase':'SB', 'railway':'RW', 'netlify':'NL', 'firebase':'FB', 'square':'SQ', 'ebay':'EB', 'chrome':'CH', 'google drive':'GD' };
+  if (known[key]) return known[key];
+  return String(name).trim().slice(0, 2).toUpperCase() || '·';
+}
 function serviceLinks(value) {
   if (!Array.isArray(value)) return [];
   return value.map(item => {
@@ -211,8 +217,9 @@ function renderProjects() {
     const services = serviceLinks(p.external_services);
     const serviceIcons = services.map(item => {
       const logo = serviceLogo(item.name);
-      const contents = logo ? `<img src="https://cdn.simpleicons.org/${logo}" alt="${escapeHtml(item.name)}" loading="lazy" />` : `<span class="service-fallback">${escapeHtml(item.name.slice(0, 1).toUpperCase())}</span>`;
-      const common = `class="service-logo${logo ? '' : ' fallback'}" title="${escapeHtml(item.name)}"`;
+      const shortName = serviceShortName(item.name);
+      const contents = `<span class="service-fallback" aria-hidden="true">${escapeHtml(shortName)}</span>${logo ? `<img src="https://cdn.simpleicons.org/${logo}" alt="${escapeHtml(item.name)}" onerror="this.style.display='none'" />` : ''}`;
+      const common = `class="service-logo${logo ? '' : ' fallback'}" title="${escapeHtml(item.name)}" data-service="${escapeHtml(item.name)}"`;
       return item.url ? `<a ${common} href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(item.name)}を開く">${contents}</a>` : `<span ${common} aria-label="使用サービス: ${escapeHtml(item.name)}">${contents}</span>`;
     }).join('');
     const title = projectUrl
