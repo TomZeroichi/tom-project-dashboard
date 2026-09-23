@@ -38,7 +38,7 @@ const els = Object.fromEntries([
   'liveState','loginBtn','logoutBtn','overallProgress','overallBar','projectCount','stale3Count','stale7Count','statusSummary',
   'categoryFilter','statusFilter','updateFilter','sortFilter','searchInput','projectGrid','lastSync','notice','loginDialog','loginForm',
   'loginEmail','loginPassword','loginMessage','editDialog','editForm','editId','editTitle','editProgress','editStatus',
-  'editPriority','editOwner','editCurrent','editNext','editMessage','editCancel'
+  'editPriority','editOwner','editProjectUrl','editAdminUrl','editServices','editCurrent','editNext','editMessage','editCancel'
 ].map(id => [id, document.getElementById(id)]));
 
 let projects = [];
@@ -48,6 +48,37 @@ let channel = null;
 
 function escapeHtml(value='') {
   return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+function safeProjectUrl(value='') {
+  try {
+    const url = new URL(String(value).trim());
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+function serviceLogo(name='') {
+  const known = { 'github':'github', 'supabase':'supabase', 'railway':'railway', 'netlify':'netlify', 'firebase':'firebase', 'square':'square', 'ebay':'ebay', 'chrome':'googlechrome', 'google drive':'googledrive' };
+  return known[String(name).trim().toLowerCase()] || '';
+}
+function serviceLinks(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(item => {
+    const name = typeof item === 'string' ? item : item?.name;
+    const url = typeof item === 'string' ? '' : safeProjectUrl(item?.url);
+    return name ? { name:String(name).trim(), url } : null;
+  }).filter(Boolean);
+}
+function serviceText(value) {
+  return serviceLinks(value).map(item => item.url ? `${item.name} | ${item.url}` : item.name).join('\n');
+}
+function parseServices(value='') {
+  return String(value).split(/\r?\n/).map(line => {
+    const [name, ...urlParts] = line.split('|');
+    const cleanedName = name.trim();
+    const url = safeProjectUrl(urlParts.join('|').trim());
+    return cleanedName ? { name:cleanedName, ...(url ? { url } : {}) } : null;
+  }).filter(Boolean);
 }
 function safeArray(value) {
   if (Array.isArray(value)) return value.filter(Boolean).map(String);
@@ -175,11 +206,23 @@ function renderProjects() {
     const progress = Math.max(0,Math.min(100,Number(p.progress)||0));
     const delta = deltaMeta(p);
     const freshness = getFreshness(p);
+    const projectUrl = safeProjectUrl(p.project_url);
+    const adminUrl = safeProjectUrl(p.admin_url);
+    const services = serviceLinks(p.external_services);
+    const serviceIcons = services.map(item => {
+      const logo = serviceLogo(item.name);
+      const contents = logo ? `<img src="https://cdn.simpleicons.org/${logo}" alt="${escapeHtml(item.name)}" loading="lazy" />` : `<span class="service-fallback">${escapeHtml(item.name.slice(0, 1).toUpperCase())}</span>`;
+      const common = `class="service-logo${logo ? '' : ' fallback'}" title="${escapeHtml(item.name)}"`;
+      return item.url ? `<a ${common} href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(item.name)}を開く">${contents}</a>` : `<span ${common} aria-label="使用サービス: ${escapeHtml(item.name)}">${contents}</span>`;
+    }).join('');
+    const title = projectUrl
+      ? `<a class="project-title-link" href="${escapeHtml(projectUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.name)} <span aria-hidden="true">↗</span><span class="sr-only">（新しいタブで開く）</span></a>`
+      : escapeHtml(p.name);
     return `<article class="project-card freshness-${freshness.state}" style="--category-color:${color}">
       <div class="project-number">${Number(p.sort_order)||''}</div>
       <div class="project-main">
         <div class="project-top">
-          <div><h2 class="project-title">${escapeHtml(p.name)}</h2><p class="project-subtitle">${escapeHtml(p.subtitle||'')}</p></div>
+          <div><h2 class="project-title">${title}</h2><p class="project-subtitle">${escapeHtml(p.subtitle||'')}</p></div>
           <div class="badges"><span class="badge category">${escapeHtml(p.category||'その他')}</span><span class="badge status-${escapeHtml(p.status||'開発中')}">${escapeHtml(p.status||'開発中')}</span><span class="badge">優先度 ${escapeHtml(p.priority||'中')}</span></div>
         </div>
         <div class="progress-row"><div class="progress-metric"><strong class="progress-value">${progress}%</strong><span class="delta-badge delta-${delta.state}">${delta.arrow} 前回比 ${delta.text}</span></div><div class="progress-mini" aria-label="進捗 ${progress}%"><span style="width:${progress}%"></span></div><span class="owner">担当: ${escapeHtml(p.owner_name||'未設定')}</span></div>
@@ -187,7 +230,7 @@ function renderProjects() {
           <section class="work-box"><h3>現在の作業</h3><ul>${current.map(v=>`<li>${escapeHtml(v)}</li>`).join('') || '<li>未登録</li>'}</ul></section>
           <section class="work-box"><h3>次の作業</h3><ul>${next.map(v=>`<li>${escapeHtml(v)}</li>`).join('') || '<li>未登録</li>'}</ul></section>
         </div>
-        <div class="card-footer"><div class="footer-meta"><span class="freshness-badge freshness-${freshness.state}">● ${freshness.label}</span><span>最終更新 ${formatDate(p.updated_at)}</span></div>${canEdit ? `<button type="button" class="edit-btn" data-edit-id="${p.id}">編集</button>` : ''}</div>
+        <div class="card-footer"><div class="footer-meta"><span class="freshness-badge freshness-${freshness.state}">● ${freshness.label}</span><span>最終更新 ${formatDate(p.updated_at)}</span></div><div class="card-actions"><div class="project-links">${projectUrl ? `<a class="link-icon public-link" href="${escapeHtml(projectUrl)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(p.name)}の公開URLを開く" title="公開URL">◎</a>` : ''}${adminUrl ? `<a class="link-icon admin-link" href="${escapeHtml(adminUrl)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(p.name)}の管理画面を開く" title="管理画面">⚙</a>` : ''}${serviceIcons}</div>${canEdit ? `<button type="button" class="edit-btn" data-edit-id="${p.id}">編集</button>` : ''}</div></div>
       </div>
     </article>`;
   }).join('');
@@ -255,6 +298,9 @@ function openEditor(id) {
   els.editStatus.value = p.status || '開発中';
   els.editPriority.value = p.priority || '中';
   els.editOwner.value = p.owner_name || '';
+  els.editProjectUrl.value = p.project_url || '';
+  els.editAdminUrl.value = p.admin_url || '';
+  els.editServices.value = serviceText(p.external_services);
   els.editCurrent.value = safeArray(p.current_work).join('\n');
   els.editNext.value = safeArray(p.next_work).join('\n');
   els.editMessage.textContent = '';
@@ -283,6 +329,9 @@ els.editForm.addEventListener('submit',async e=>{
     status:els.editStatus.value,
     priority:els.editPriority.value,
     owner_name:els.editOwner.value.trim(),
+    project_url:safeProjectUrl(els.editProjectUrl.value),
+    admin_url:safeProjectUrl(els.editAdminUrl.value),
+    external_services:parseServices(els.editServices.value),
     current_work:safeArray(els.editCurrent.value),
     next_work:safeArray(els.editNext.value),
     updated_by:currentUser?.id || null
