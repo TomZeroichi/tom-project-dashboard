@@ -87,6 +87,22 @@ button { cursor:pointer; }
 .work-box ul { margin:0; padding-left:1.2em; color:#354663; font-size:.84rem; line-height:1.55; }
 .card-footer { margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; color:#8290a8; font-size:.74rem; }
 .footer-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0; }
+.card-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.project-links { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.link-icon,.service-logo { width:32px; height:32px; display:inline-grid; place-items:center; border-radius:10px; border:1px solid #d7e3f0; background:#f4f8fc; color:#44617f; text-decoration:none; font-size:1.02rem; font-weight:900; line-height:1; transition:transform .15s ease, background .15s ease, border-color .15s ease; }
+.link-icon:hover,.service-logo:hover { transform:translateY(-1px); background:#e7f2ff; border-color:#a8c9eb; }
+.public-link { color:#0b73d5; }
+.admin-link { color:#6a4fba; }
+.service-logo { position:relative; overflow:hidden; }
+.service-logo img { position:relative; z-index:1; display:block; width:18px; height:18px; object-fit:contain; }
+.service-fallback { position:absolute; inset:0; display:grid; place-items:center; color:#31506f; font-size:.62rem; letter-spacing:-.03em; font-weight:950; }
+.service-logo[data-service="GitHub"] { background:#eef1f5; color:#17202a; }
+.service-logo[data-service="Supabase"] { background:#e9fbf1; color:#159447; }
+.service-logo[data-service="Railway"] { background:#f0f0f2; color:#24242a; }
+.service-logo[data-service="Firebase"] { background:#fff7df; color:#b97800; }
+.service-logo[data-service="Netlify"] { background:#e8fbfc; color:#07888f; }
+.service-logo[data-service="Square"] { background:#f0ecff; color:#5c45b8; }
+.service-logo[data-service="Google Drive"] { background:#eef8eb; color:#2f8b45; }
 .freshness-badge { display:inline-flex; align-items:center; border-radius:999px; padding:5px 8px; font-weight:900; white-space:nowrap; }
 .freshness-badge.freshness-fresh { color:#087942; background:#e7f9ef; }
 .freshness-badge.freshness-aging { color:#9a6500; background:#fff5df; }
