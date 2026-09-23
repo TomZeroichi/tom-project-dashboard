@@ -218,7 +218,7 @@ function renderProjects() {
     const serviceIcons = services.map(item => {
       const logo = serviceLogo(item.name);
       const shortName = serviceShortName(item.name);
-      const contents = `<span class="service-fallback" aria-hidden="true">${escapeHtml(shortName)}</span>${logo ? `<img src="https://cdn.simpleicons.org/${logo}" alt="${escapeHtml(item.name)}" onerror="this.style.display='none'" />` : ''}`;
+      const contents = `<span class="service-fallback" aria-hidden="true">${escapeHtml(shortName)}</span>${logo ? `<img src="https://cdn.simpleicons.org/${logo}" alt="${escapeHtml(item.name)}" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'" />` : ''}`;
       const common = `class="service-logo${logo ? '' : ' fallback'}" title="${escapeHtml(item.name)}" data-service="${escapeHtml(item.name)}"`;
       return item.url ? `<a ${common} href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(item.name)}を開く">${contents}</a>` : `<span ${common} aria-label="使用サービス: ${escapeHtml(item.name)}">${contents}</span>`;
     }).join('');
